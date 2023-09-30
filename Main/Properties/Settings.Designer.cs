@@ -162,5 +162,20 @@ namespace FoenixIDE.Simulator.Properties {
                 this["ViewIsMaximized"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TranscriptModeDebugger
+        {
+            get
+            {
+                return ((bool)(this["TranscriptModeDebugger"]));
+            }
+            set
+            {
+                this["TranscriptModeDebugger"] = value;
+            }
+        }
     }
 }

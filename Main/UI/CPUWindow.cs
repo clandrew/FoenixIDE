@@ -23,6 +23,8 @@ namespace FoenixIDE.UI
         private BreakpointWindow breakpointWindow = new BreakpointWindow();
         private List<DebugLine> codeList = null;
 
+        public Transcript Transcript = null;
+
         public static CPUWindow Instance = null;
         private FoenixSystem kernel = null;
         private int[] ActiveLine = {0, 0, 0};  // PC, startofline, width - the point of this is to underline the ADDRESS name
@@ -44,6 +46,15 @@ namespace FoenixIDE.UI
             DisableIRQs(true);
             registerDisplay1.RegistersReadOnly(false);
             breakpointWindow.DeleteEvent += DeleteEventHandler;
+
+            Transcript = new Transcript(
+                this, 
+                DebugPanel, 
+                HeaderTextbox,
+                AddBPOverlayButton,
+                DeleteBPOverlayButton,
+                InspectOverlayButton, 
+                LabelOverlayButton);
         }
 
         /**
@@ -79,6 +90,8 @@ namespace FoenixIDE.UI
         }
         private void UpdateQueue()
         {
+            Transcript.OnNewKernel(kernel);
+
             if (kernel.lstFile != null && kernel.lstFile.Lines.Count > 0)
             {
                 codeList = new List<DebugLine>(kernel.lstFile.Lines.Count);
@@ -103,7 +116,7 @@ namespace FoenixIDE.UI
         {
             while (!kernel.CPU.DebugPause)
             {
-                ExecuteStep();
+                ExecuteStep(WriteToTranscriptEnablement.Disabled);
             }
         }
 
@@ -120,11 +133,17 @@ namespace FoenixIDE.UI
 
             DebugPanel.Paint += new System.Windows.Forms.PaintEventHandler(DebugPanel_Paint);
             DisplayInterruptTooltips();
+
+            Transcript.OnLoadForm();
+            Transcript.AddCPUWindowUI(this.SecondPanel.Controls);
         }
 
 
         private void DebugPanel_Paint(object sender, PaintEventArgs e)
         {
+            if (Transcript.OnPaint(e))
+                return;
+
             bool paint = false;
             int currentPC = kernel.CPU.PC;
             //if ((kernel.CPU.DebugPause))
@@ -299,6 +318,9 @@ namespace FoenixIDE.UI
         }
         private void DebugPanel_MouseMove(object sender, MouseEventArgs e)
         {
+            if (Transcript.OnMouseMove())
+                return;
+
             if (kernel.CPU.DebugPause)
             {
                 if (e.X > 2 && e.X < 2 + LABEL_WIDTH)
@@ -535,7 +557,7 @@ namespace FoenixIDE.UI
             RunButton.Text = "Run (F5)";
             RunButton.Tag = "0";
             UpdateTraceTimer.Enabled = false;
-            ExecuteStep();
+            ExecuteStep(WriteToTranscriptEnablement.Enabled);
             RefreshStatus();
             registerDisplay1.RegistersReadOnly(false);
             MainWindow.Instance.SetGpuPeriod(500);
@@ -587,7 +609,7 @@ namespace FoenixIDE.UI
             }
             else
             {
-                ExecuteStep();
+                ExecuteStep(WriteToTranscriptEnablement.Enabled);
                 RefreshStatus();
             }
         }
@@ -659,7 +681,7 @@ namespace FoenixIDE.UI
         /// Executes next step of 65C816 code, logs dubeugging data
         /// if debugging check box is set on CPU Window
         /// </summary>
-        public void ExecuteStep()
+        public void ExecuteStep(WriteToTranscriptEnablement writeToTranscriptEnablement)
         {
             DebugLine line = null;
             int previousPC = kernel.CPU.PC;
@@ -673,6 +695,7 @@ namespace FoenixIDE.UI
                 {
                     UpdateTraceTimer.Enabled = false;
                     kernel.CPU.DebugPause = true;
+                    writeToTranscriptEnablement = WriteToTranscriptEnablement.Enabled;
                     string errorMessage = "PC exceeds memory limit.  Calling instruction at address: $" + previousPC.ToString("X6");
                     if (lastLine.InvokeRequired)
                     {
@@ -692,6 +715,7 @@ namespace FoenixIDE.UI
                     {
                         UpdateTraceTimer.Enabled = false;
                         kernel.CPU.DebugPause = true;
+                        writeToTranscriptEnablement = WriteToTranscriptEnablement.Enabled;
                     }
                     Invoke(new breakpointSetter(BreakpointReached), new object[] { effAddr });
                 }
@@ -718,6 +742,7 @@ namespace FoenixIDE.UI
                     {
                         UpdateTraceTimer.Enabled = false;
                         kernel.CPU.DebugPause = true;
+                        writeToTranscriptEnablement = WriteToTranscriptEnablement.Enabled;
                         //queue.Clear();
                     }
                     if (kernel.CPU.Pins.GetInterruptPinActive && !kernel.CPU.Flags.IrqDisable)
@@ -746,7 +771,8 @@ namespace FoenixIDE.UI
                     GenerateNextInstruction(pc);
                 }
             }
-                    
+
+            Transcript.OnExecuteStep(writeToTranscriptEnablement);
         }
 
         private delegate void lastLineDelegate(string line);
@@ -837,6 +863,9 @@ namespace FoenixIDE.UI
 
         public void ClearTrace()
         {
+            if (Transcript.OnClearTrace())
+                return;
+
             IRQPC = 0;
             kernel.CPU.Stack.TopOfStack = kernel.CPU.Flags.Emulation ? CPU.DefaultStackValueEmulation : CPU.DefaultStackValueNative;
             stackText.Clear();
@@ -1038,6 +1067,9 @@ namespace FoenixIDE.UI
 
         private void DebugPanel_MouseClick(object sender, MouseEventArgs e)
         {
+            if (Transcript.OnMouseClick(e))
+                return;
+
             if (ActiveLine[0] != 0 && kernel.lstFile.Lines.ContainsKey(ActiveLine[0]))
             {
                 DebugLine line = kernel.lstFile.Lines[ActiveLine[0]];
