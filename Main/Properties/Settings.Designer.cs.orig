@@ -46,6 +46,7 @@ namespace FoenixIDE.Simulator.Properties {
                 this["BoardRevision"] = value;
             }
         }
+<<<<<<< HEAD
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -102,10 +103,13 @@ namespace FoenixIDE.Simulator.Properties {
                 this["SDCardFSType"] = value;
             }
         }
+=======
+>>>>>>> 829996e (Add transcript-mode debugger)
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+<<<<<<< HEAD
         public bool SDCardISOMode
         {
             get
@@ -160,12 +164,7 @@ namespace FoenixIDE.Simulator.Properties {
             set
             {
                 this["ViewIsMaximized"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+=======
         public bool TranscriptModeDebugger
         {
             get
@@ -175,6 +174,7 @@ namespace FoenixIDE.Simulator.Properties {
             set
             {
                 this["TranscriptModeDebugger"] = value;
+>>>>>>> 829996e (Add transcript-mode debugger)
             }
         }
     }

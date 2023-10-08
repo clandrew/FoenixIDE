@@ -49,12 +49,12 @@ namespace FoenixIDE.UI
             breakpointWindow.DeleteEvent += DeleteEventHandler;
 
             Transcript = new Transcript(
-                this,
-                DebugPanel,
+                this, 
+                DebugPanel, 
                 HeaderTextbox,
                 AddBPOverlayButton,
                 DeleteBPOverlayButton,
-                InspectOverlayButton,
+                InspectOverlayButton, 
                 LabelOverlayButton);
         }
 
@@ -1068,10 +1068,14 @@ namespace FoenixIDE.UI
 
         private void DebugPanel_MouseClick(object sender, MouseEventArgs e)
         {
+<<<<<<< HEAD
+            if (e.Button == MouseButtons.Left && ActiveLine[0] != 0 && kernel.lstFile.Lines.ContainsKey(ActiveLine[0]))
+=======
             if (Transcript.OnMouseClick(e))
                 return;
 
-            if (e.Button == MouseButtons.Left && ActiveLine[0] != 0 && kernel.lstFile.Lines.ContainsKey(ActiveLine[0]))
+            if (ActiveLine[0] != 0 && kernel.lstFile.Lines.ContainsKey(ActiveLine[0]))
+>>>>>>> 829996e (Add transcript-mode debugger)
             {
                 DebugLine line = kernel.lstFile.Lines[ActiveLine[0]];
                 if (line != null)
