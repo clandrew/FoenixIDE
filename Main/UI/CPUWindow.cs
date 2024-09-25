@@ -25,6 +25,7 @@ namespace FoenixIDE.UI
         private BreakpointWindow breakpointWindow = new BreakpointWindow();
         private List<DebugLine> codeList = null;
         private SortedList<string, int> DbgLabels = new SortedList<string, int>();
+        public Transcript Transcript = null;
 
         public static CPUWindow Instance = null;
         private FoenixSystem kernel = null;
@@ -48,6 +49,15 @@ namespace FoenixIDE.UI
             DisableIRQs(true);
             registerDisplay1.RegistersReadOnly(false);
             breakpointWindow.DeleteEvent += DeleteEventHandler;
+
+            Transcript = new Transcript(
+                this,
+                DebugPanel,
+                HeaderTextbox,
+                AddBPOverlayButton,
+                DeleteBPOverlayButton,
+                InspectOverlayButton,
+                LabelOverlayButton);
         }
 
         /**
@@ -86,6 +96,8 @@ namespace FoenixIDE.UI
         // Need to re-read the DbgLabels because we are reloading the listing from kernel
         private void UpdateQueue()
         {
+            Transcript.OnNewKernel(kernel);
+
             string newkernelname = kernel.GetKernelName();
 
             if (!newkernelname.Equals(lastLoadedKernel) || codeList == null || (kernel.lstFile.Lines.Count>0 && codeList.Count != kernel.lstFile.Lines.Count))
@@ -151,11 +163,17 @@ namespace FoenixIDE.UI
 
             DebugPanel.Paint += new System.Windows.Forms.PaintEventHandler(DebugPanel_Paint);
             DisplayInterruptTooltips();
+
+            Transcript.OnLoadForm();
+            Transcript.AddCPUWindowUI(this.SecondPanel.Controls);
         }
 
 
         private void DebugPanel_Paint(object sender, PaintEventArgs e)
         {
+            if (Transcript.OnPaint(e))
+                return;
+
             bool paint = false;
             int currentPC = kernel.CPU.PC;
             //if ((kernel.CPU.DebugPause))
@@ -373,6 +391,9 @@ namespace FoenixIDE.UI
         }
         private void DebugPanel_MouseMove(object sender, MouseEventArgs e)
         {
+            if (Transcript.OnMouseMove())
+                return;
+
             if (kernel.CPU.DebugPause)
             {
                 if (e.X > 2 && e.X < 2 + LABEL_WIDTH)
@@ -906,6 +927,9 @@ namespace FoenixIDE.UI
                 {
                     GenerateNextInstruction(pc);
                 }
+
+
+                Transcript.OnExecuteStep(WriteToTranscriptEnablement.Enabled);
             }
                     
         }
@@ -1009,6 +1033,9 @@ namespace FoenixIDE.UI
 
         public void ClearTrace()
         {
+            if (Transcript.OnClearTrace())
+                return;
+
             ResetInterrupts();
             kernel.CPU.Stack.TopOfStack = kernel.CPU.Flags.Emulation ? CPU.DefaultStackValueEmulation : CPU.DefaultStackValueNative;
             stackText.Clear();
@@ -1237,6 +1264,9 @@ namespace FoenixIDE.UI
 
         private void DebugPanel_MouseClick(object sender, MouseEventArgs e)
         {
+            if (Transcript.OnMouseClick(e))
+                return;
+
             if (!kernel.CPU.DebugPause)
                 return;
 

@@ -408,7 +408,7 @@ namespace FoenixIDE.UI
             form.Location = new Point(left, top);
         }
 
-        private void LoadExecutableFile(string Filename)
+        public void LoadExecutableFile(string Filename)
         {
             debugWindow.Pause();
             kernel.SetVersion(version);
@@ -441,6 +441,11 @@ namespace FoenixIDE.UI
                 debugWindow.SetBoardVersion(ver);
                 debugWindow.SetKernel(kernel);
                 debugWindow.Show();
+
+                this.debugWindow.Transcript.AddMainWindowUI(
+                    this,
+                    this.fileToolStripMenuItem.DropDownItems,
+                    this.settingsToolStripMenuItem.DropDownItems);
             }
             else
             {

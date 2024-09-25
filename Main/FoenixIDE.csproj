@@ -264,6 +264,7 @@
     <Compile Include="UI\TileEditor.Designer.cs">
       <DependentUpon>TileEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\Transcript.cs" />
     <Compile Include="UI\UploaderDialog.cs">
       <SubType>Form</SubType>
     </Compile>
